@@ -1,18 +1,21 @@
 from flask import Flask, request, jsonify
 from datetime import datetime
+from pymongo import MongoClient
 import os
 
 app = Flask(__name__)
 
-# In-memory storage for webhook actions
-actions = []
+# MongoDB connection setup
+client = MongoClient(os.getenv('MONGODB_URI', 'mongodb://localhost:27017/'))
+db = client['webhook_db']
+actions_collection = db['actions']
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
     data = request.json
 
-    # Extract common details
-    github_event = request.headers.get('X-GitHub-Event')
+    
+    github_event = request.headers.get('application/json')
 
     if github_event == "push":
         doc = {
@@ -38,7 +41,8 @@ def webhook():
     else:
         return jsonify({"message": "Unsupported event type"}), 400
 
-    actions.append(doc)
+    # Store in MongoDB
+    actions_collection.insert_one(doc)
     return jsonify({"message": "Webhook received"}), 200
 
 if __name__ == '__main__':
