@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 
 # MongoDB connection setup
-client = MongoClient(os.getenv('MONGODB_URI', 'mongodb://localhost:27017/'))
+client = MongoClient(os.getenv('mongodb+srv://pellurusai22:pellurusai22@cluster0.iwpdndh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', 'mongodb://localhost:27017/'))
 db = client['webhook_db']
 actions_collection = db['actions']
 
@@ -15,7 +15,7 @@ def webhook():
     data = request.json
 
     
-    github_event = request.headers.get('application/json')
+    github_event = request.headers.get('X-GitHub-Event')
 
     if github_event == "push":
         doc = {
